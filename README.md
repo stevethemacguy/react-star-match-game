@@ -1,3 +1,7 @@
+# react-star-match-game
+A basic app based on the "React: Getting Started" PluralSight course created by Samer Buna.
+Note: This is a basic React playground. It's not meant to be a well-structured app or follow any best practices.
+
 # Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
