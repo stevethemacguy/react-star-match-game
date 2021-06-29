@@ -24,7 +24,7 @@ const StarList = (props) => {
 
 const NumberButton = (props) => {
   return (
-    <button className={'number'} style={{backgroundColor: props.numberColor}} onClick={() => props.handleClick(props.number)}>{props.number}</button>
+    <button className={'number'} style={{backgroundColor: props.status}} onClick={() => props.handleClick(props.number)}>{props.number}</button>
   )
 };
 
@@ -40,12 +40,21 @@ const StarMatch = () => {
   }
 
   let [numberStateArray, updateNumberState] = useState(colorStateArray);
+  //let [availableNumbers, updateAvailableNumbers] = useState([1, 2, 3, 4]);
+  //let [candidateNumbers, updatecandidateNumbers] = useState([2, 3, 5]);
 
   const selectNumber = (number) => {
     const arrayToUpdate = numberStateArray.slice();
     arrayToUpdate[number] = 'used';
     updateNumberState(arrayToUpdate);
   };
+
+  // Returns a CSS class that matches the number's current 'status' (e.g. 'available', 'used')
+  const getNumberStatus = (number) => {
+    return colors[numberStateArray[number]];
+  }
+
+  // Mark the selected Number as 'wrong', if the sum of the candidates > starCount
 
   return (
     <div className="game">
@@ -59,7 +68,7 @@ const StarMatch = () => {
         <div className="right">
           {/* Identical to the the StarList function, but uses his fancy 'range' function in place instead*/}
           {utils.range(1, 9).map(number =>
-            <NumberButton key={number} number={number} numberColor={colors[numberStateArray[number]]} handleClick={selectNumber}/>
+            <NumberButton key={number} number={number} status={getNumberStatus(number)} handleClick={selectNumber}/>
           )}
         </div>
       </div>
