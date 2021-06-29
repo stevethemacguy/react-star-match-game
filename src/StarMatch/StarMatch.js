@@ -34,16 +34,41 @@ const StarMatch = () => {
 
   // An array of color states. One for each Button. Initialized to the 'available' state
 
-  const [availableNums, updateAvailableNums] = useState([1, 2, 3, 4, 5]);
-  const [candidateNums, updateCandidateNums] = useState([2, 3]);
+  const [availableNums, updateAvailableNums] = useState(utils.range(1, 9));
+  const [candidateNums, updateCandidateNums] = useState([]);
 
   // Mark the selected Number as 'wrong', if the sum of the candidates > starCount
   const candidatesAreWrong = utils.sum(candidateNums) > starCount
-  const selectNumber = (number) => {
-    // const arrayToUpdate = numberStateArray.slice();
-    //
-    // arrayToUpdate[number] = 'used';
-    // updateNumberState(arrayToUpdate);
+
+  // Given the current state, what happens when clicking the Number
+  const onNumberClick = (number) => {
+    // If the number is already used? don't do anything
+    if (getNumberStatus(number) === 'used') {
+      return;
+    }
+    if (getNumberStatus(number) === 'available') {
+      const arrayToChange = candidateNums.slice();
+      arrayToChange.push(number);
+      // updateNumberState(arrayToUpdate);
+      // Make it a candidate number
+      updateCandidateNums(arrayToChange);
+    }
+    // It's already candidate, remove it from the candidate array since they just clicked it a 2nd time.
+    // Note: A candidate can either be valid (i.e. 'candidate') or 'wrong',
+    else {
+      // Remove it from the candidate array
+      const candidateArray = candidateNums.slice();
+      const index = candidateArray.indexOf(number);
+      if (index > -1) {
+        candidateArray.splice(index, 1);
+      }
+      updateCandidateNums(candidateArray); // Update the state using our changed array
+
+      // Add it back the candidate array
+      const availableArray = availableNums.slice();
+      availableArray.push(number);
+      updateAvailableNums(availableArray); // Update the state using our changed array
+    }
   };
 
   // Returns a CSS class that matches the number's current 'status' (e.g. 'available', 'used')
@@ -71,7 +96,7 @@ const StarMatch = () => {
         <div className="right">
           {/* Identical to the the StarList function, but uses his fancy 'range' function in place instead*/}
           {utils.range(1, 9).map(number =>
-            <NumberButton key={number} number={number} status={getNumberStatus(number)} handleClick={selectNumber}/>
+            <NumberButton key={number} number={number} status={getNumberStatus(number)} handleClick={onNumberClick}/>
           )}
         </div>
       </div>
