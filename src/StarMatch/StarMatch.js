@@ -22,6 +22,11 @@ const StarList = (props) => {
   });
 };
 
+const NumberButton = (props) => {
+  return (
+    <button className={'number'} style={{backgroundColor: props.numberColor}} onClick={() => props.handleClick(props.number)}>{props.number}</button>
+  )
+};
 
 const StarMatch = () => {
   // A random number of stars limited to the range of 1 - 9
@@ -54,7 +59,7 @@ const StarMatch = () => {
         <div className="right">
           {/* Identical to the the StarList function, but uses his fancy 'range' function in place instead*/}
           {utils.range(1, 9).map(number =>
-            <button key="number" className={'number'} style={{backgroundColor: colors[numberStateArray[number]]}} onClick={() => selectNumber(number)}>{number}</button>
+            <NumberButton key={number} number={number} numberColor={colors[numberStateArray[number]]} handleClick={selectNumber}/>
           )}
         </div>
       </div>
