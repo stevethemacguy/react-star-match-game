@@ -24,7 +24,7 @@ const StarList = (props) => {
 
 const NumberButton = (props) => {
   return (
-    <button className={'number'} style={{backgroundColor: colors[props.status]}} onClick={() => props.handleClick(props.number)}>{props.number}</button>
+    <button className={'number'} style={{backgroundColor: colors[props.status]}} onClick={() => props.handleClick(props.number, props.status)}>{props.number}</button>
   )
 };
 
@@ -39,14 +39,15 @@ const StarMatch = () => {
 
   // Mark the selected Number as 'wrong', if the sum of the candidates > starCount
   const candidatesAreWrong = utils.sum(candidateNums) > starCount
+  const candidatesMatchTheStars = utils.sum(candidateNums) === starCount;
 
   // Given the current state, what happens when clicking the Number
-  const onNumberClick = (number) => {
+  const onNumberClick = (number, status) => {
     // If the number is already used? don't do anything
-    if (getNumberStatus(number) === 'used') {
+    if (status === 'used') {
       return;
     }
-    if (getNumberStatus(number) === 'available') {
+    if (status === 'available') {
       const arrayToChange = candidateNums.slice();
       arrayToChange.push(number);
       // updateNumberState(arrayToUpdate);
