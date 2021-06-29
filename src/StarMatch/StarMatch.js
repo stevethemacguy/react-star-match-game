@@ -24,7 +24,8 @@ const StarList = (props) => {
 
 
 const StarMatch = () => {
-  const starCount = 9;
+  // A random number of stars limited to the range of 1 - 9
+  const starCount = utils.random(1, 9);
   return (
     <div className="game">
       <div className="help">
