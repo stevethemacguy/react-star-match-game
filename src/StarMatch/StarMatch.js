@@ -24,7 +24,7 @@ const StarList = (props) => {
 
 const NumberButton = (props) => {
   return (
-    <button className={'number'} style={{backgroundColor: props.status}} onClick={() => props.handleClick(props.number)}>{props.number}</button>
+    <button className={'number'} style={{backgroundColor: colors[props.status]}} onClick={() => props.handleClick(props.number)}>{props.number}</button>
   )
 };
 
@@ -33,28 +33,31 @@ const StarMatch = () => {
   const [starCount, updateStarCount] = useState(utils.random(1, 9));
 
   // An array of color states. One for each Button. Initialized to the 'available' state
-  //const colorStateArray = starCount.map(number => 'available');
-  const colorStateArray = [];
-  for (let i = 0; i < 10; i++) {
-    colorStateArray.push('available');
-  }
 
-  let [numberStateArray, updateNumberState] = useState(colorStateArray);
-  //let [availableNumbers, updateAvailableNumbers] = useState([1, 2, 3, 4]);
-  //let [candidateNumbers, updatecandidateNumbers] = useState([2, 3, 5]);
+  const [availableNums, updateAvailableNums] = useState([1, 2, 3, 4, 5]);
+  const [candidateNums, updateCandidateNums] = useState([2, 3]);
 
+  // Mark the selected Number as 'wrong', if the sum of the candidates > starCount
+  const candidatesAreWrong = utils.sum(candidateNums) > starCount
   const selectNumber = (number) => {
-    const arrayToUpdate = numberStateArray.slice();
-    arrayToUpdate[number] = 'used';
-    updateNumberState(arrayToUpdate);
+    // const arrayToUpdate = numberStateArray.slice();
+    //
+    // arrayToUpdate[number] = 'used';
+    // updateNumberState(arrayToUpdate);
   };
 
   // Returns a CSS class that matches the number's current 'status' (e.g. 'available', 'used')
+  // The status will determine the background-color used
   const getNumberStatus = (number) => {
-    return colors[numberStateArray[number]];
+    if (!availableNums.includes(number)) {
+      return 'used'; // Numbers that are *not* available, which means they have already been selected
+    }
+    if (candidateNums.includes(number)) {
+      return candidatesAreWrong ? 'wrong': 'candidate'; // NumberButtons that are candidates or wrong
+    }
+    return 'available'; // Open numbers that can be selected
   }
 
-  // Mark the selected Number as 'wrong', if the sum of the candidates > starCount
 
   return (
     <div className="game">
