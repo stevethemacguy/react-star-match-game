@@ -1,10 +1,10 @@
 import './app.css';
+import './StarMatch/StarMatch.css';
+import StarMatch from './StarMatch/StarMatch';
 
 function App() {
   return (
-    <div className="App">
-      Hello world
-    </div>
+    <StarMatch/>
   );
 }
 
