@@ -6,7 +6,22 @@ import App from '../app';
  * Dependencies: None
  */
 
+const Star = () => {
+  return <div className="star"/>;
+};
+
+const StarList = (props) => {
+  const elements = []
+  for (let i = 0; i < props.starCount; i++) {
+    elements.push(<Star/>);
+  }
+  return (
+    elements
+  );
+};
+
 const StarMatch = () => {
+  const starCount = 9;
   return (
     <div className="game">
       <div className="help">
@@ -14,15 +29,7 @@ const StarMatch = () => {
       </div>
       <div className="body">
         <div className="left">
-          <div className="star" />
-          <div className="star" />
-          <div className="star" />
-          <div className="star" />
-          <div className="star" />
-          <div className="star" />
-          <div className="star" />
-          <div className="star" />
-          <div className="star" />
+          <StarList starCount={starCount}/>
         </div>
         <div className="right">
           <button className="number">1</button>
