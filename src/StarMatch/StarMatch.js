@@ -26,6 +26,22 @@ const StarList = (props) => {
 const StarMatch = () => {
   // A random number of stars limited to the range of 1 - 9
   const [starCount, updateStarCount] = useState(utils.random(1, 9));
+
+  // An array of color states. One for each Button. Initialized to the 'available' state
+  //const colorStateArray = starCount.map(number => 'available');
+  const colorStateArray = [];
+  for (let i = 0; i < 10; i++) {
+    colorStateArray.push('available');
+  }
+
+  let [numberStateArray, updateNumberState] = useState(colorStateArray);
+
+  const selectNumber = (number) => {
+    const arrayToUpdate = numberStateArray.slice();
+    arrayToUpdate[number] = 'used';
+    updateNumberState(arrayToUpdate);
+  };
+
   return (
     <div className="game">
       <div className="help">
@@ -38,7 +54,7 @@ const StarMatch = () => {
         <div className="right">
           {/* Identical to the the StarList function, but uses his fancy 'range' function in place instead*/}
           {utils.range(1, 9).map(number =>
-            <button key="number" className="number">{number}</button>
+            <button key="number" className={`number ${numberStateArray[number]}`} onClick={() => selectNumber(number)}>{number}</button>
           )}
         </div>
       </div>
