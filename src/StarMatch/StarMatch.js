@@ -1,11 +1,5 @@
 import {useState} from 'react';
 
-/**
- * Author: Steven Dunn
- * Date Created: June 28, 2021
- * Dependencies: None
- */
-
 const Star = () => {
   return <div className="star"/>;
 };
@@ -48,56 +42,52 @@ const StarMatch = () => {
     }
 
     // In all other situations, we need to update both state arrays, so initialize the 'new' arrays. They will be used later when updating the state.
-    let newCandidateArray = candidateNums.slice(); // Start by copying the current array.
-    let newAvailableArray = availableNums.slice(); // Start by copying the current array.
+    let newCandidateNums = candidateNums.slice(); // Start by copying the current array.
+    let newAvailableNums = availableNums.slice(); // Start by copying the current array.
 
-    // If the number was 'available', mark it as candidate by pushing it onto the candidate array. GetNumberStatus() already handled setting the status
-    // to either 'wrongCandidate' or 'validCandidate', but in either case, the number needs to be a candidate, so we push it on our new array
+    // If the number was 'available', mark it as candidate by pushing it onto the candidate array. GetNumberStatus() already changed the Number's status
+    // to either 'wrongCandidate' or 'validCandidate', but in both cases, the number needs to change from 'available' to a candidate, so we push it on our new array.
     // Note: you can't push a value onto the state array directly, so you must copy it, change the copied array, and then update the state with your changed array.
     // Concat creates a new array from the original and pushes the number onto the new array (without changing the original array), so it works for this purpose.
     if (status === 'available') {
-      newCandidateArray = candidateNums.concat(number);
+      newCandidateNums = candidateNums.concat(number);
     }
     // If the status isn't 'available, then the number was already a candidate when it was clicked a 2nd time, so we need to remove it from the candidates.
     else {
       // Remove the number from the candidate array
       const index = candidateNums.indexOf(number);
       if (index !== -1) {
-        newCandidateArray.splice(index, 1);
+        newCandidateNums.splice(index, 1);
       }
-      // Note: We could also use .filter() here, but it only works if the number values are guaranteed to be unique.
+      // Note: We could also use .filter() to remove the element, but it only works if the numbers are unique (they are in this case, but I wanted to show both ways).
       // Filter returns a new array containing all elements that match the condition. If the item value IS equal to the number, then we remove it.
       // const candidateArray = candidateNums.filter((element) => element !== number);
     }
 
-    // Our newCandidateArray now has all of the candidates that it should, so check for a win condition.
+    // Our newCandidateNums now has all of the candidates that it should, so check for a win condition.
     // Note: Both adding and removing candidates can cause a win condition. If the candidates are 'wrong' (i.e. their sum was greater than the starCount),
     // removing one of the them might cause a win condition once we re-sum the candidate array.
-    if (newCandidateArray.length > 0)  {
-      // If the sum of all of the candidates in an array matches the starCount, then the user 'won' this round
-      let sum = newCandidateArray.reduce((acc, currentValue) => acc + currentValue); // Reduce returns the sum of all of the values in the array
+    // If the sum of all of the candidates in an array matches the starCount, then the user 'won' this round
+    let sum = newCandidateNums.reduce((acc, currentValue) => acc + currentValue, 0); // Reduce returns the sum of all of the values in the array
 
-      // If the user won
-      if (sum === starCount) {
-        // Remove the winning numbers from the 'available' array (i.e. Keep all numbers *except* the candidate numbers)
-        newAvailableArray = newAvailableArray.filter(number => !newCandidateArray.includes(number));
-
-        // Reset the stars, but only using the new available numbers. The winning 'candidate' numbers were removed.
-        updateStarCount(utils.randomSumIn(newAvailableArray, 9)); // See the util method for details.
-
-        // Reset the candidate array. The user is moving onto the next turn and they should start with a full array of numbers (e.g. 1 - 9)
-        newCandidateArray = [];
-      }
-      // The didn't win. Our candidate array only has valid candidates now, but we need to move the number they clicked back into the available array
-      else {
-        // This creates a new array from the original and pushes the number onto the new array (without changing the original array)
-        newAvailableArray = availableNums.concat(number);  // The spread operator could also be used to do the same thing, but concat is more appropriate for arrays.
-      }
+    // If the user won
+    if (sum === starCount) {
+      // Remove the winning numbers from the 'available' array (i.e. Keep all numbers *except* the candidate numbers)
+      newAvailableNums = newAvailableNums.filter(number => !newCandidateNums.includes(number));
+      // Reset the stars, but only using the new available numbers. The winning 'candidate' numbers were removed.
+      updateStarCount(utils.randomSumIn(newAvailableNums, 9)); // See the util method for details.
+      // Reset the candidate array. The user is moving onto the next turn and they should start with a full array of numbers (e.g. 1 - 9)
+      newCandidateNums = [];
+    }
+    // They didn't win. Our candidate array only has valid candidates now, but we need to move the number they clicked back into the available array.
+    else {
+      // Creates a new array from the original and pushes the number onto the new array (without changing the original array).
+      newAvailableNums = availableNums.concat(number);  // The spread operator could also be used to do the same thing, but concat is more appropriate for arrays.
     }
 
     // Update the state arrays
-    updateCandidateNums(newCandidateArray);
-    updateAvailableNums(newAvailableArray);
+    updateCandidateNums(newCandidateNums);
+    updateAvailableNums(newAvailableNums);
   };
 
   // Returns a CSS class that matches the number's current 'status' (e.g. 'available', 'used')
