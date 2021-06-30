@@ -39,41 +39,65 @@ const StarMatch = () => {
 
   // Mark the selected Number as 'wrong', if the sum of the candidates > starCount
   const candidatesAreWrong = utils.sum(candidateNums) > starCount
-  const candidatesMatchTheStars = utils.sum(candidateNums) === starCount;
 
-  // Given the current state, what happens when clicking the Number
+  // Given the current status of the number, what should happens when this Number is clicked?
   const onNumberClick = (number, status) => {
-    // If the number is already used? don't do anything
+    // If the number is already used (i.e. green), don't do anything. Nothing should happen when the number is clicked.
     if (status === 'used') {
       return;
     }
-    // If it's available, make it a candidate number
+
+    // In all other situations, we need to update both state arrays, so initialize the 'new' arrays. They will be used later when updating the state.
+    let newCandidateArray = candidateNums.slice(); // Start by copying the current array.
+    let newAvailableArray = availableNums.slice(); // Start by copying the current array.
+
+    // If the number was 'available', mark it as candidate by pushing it onto the candidate array. GetNumberStatus() already handled setting the status
+    // to either 'wrongCandidate' or 'validCandidate', but in either case, the number needs to be a candidate, so we push it on our new array
+    // Note: you can't push a value onto the state array directly, so you must copy it, change the copied array, and then update the state with your changed array.
+    // Concat creates a new array from the original and pushes the number onto the new array (without changing the original array), so it works for this purpose.
     if (status === 'available') {
-      // You can't push a value onto the state array directly, so you must copy it, change the copied array, and then update the state with your changed array
-      // Concat creates a new array from the original and pushes the number onto the new array (without changing the original array), so it works for this purpose.
-      const candidateArray = candidateNums.concat(number);
-      updateCandidateNums(candidateArray); // Replace the state array with our newly created array (which now contains the number)
+      newCandidateArray = candidateNums.concat(number);
     }
-    // If it's already candidate, remove it from the candidate array since they just clicked it a 2nd time.
-    // Note: A candidate can either be valid (i.e. 'candidate') or 'wrong',
+    // If the status isn't 'available, then the number was already a candidate when it was clicked a 2nd time, so we need to remove it from the candidates.
     else {
-      // Remove it from the candidate array
-      const candidateArray = candidateNums.slice();
-      const index = candidateArray.indexOf(number);
-      if (index > -1) {
-        candidateArray.splice(index, 1);
+      // Remove the number from the candidate array
+      const index = candidateNums.indexOf(number);
+      if (index !== -1) {
+        newCandidateArray.splice(index, 1);
       }
-      // Note: Instead of finding the indexToRemove, we could also use .filter(), but it only works if the number values are guaranteed to be unique.
+      // Note: We could also use .filter() here, but it only works if the number values are guaranteed to be unique.
       // Filter returns a new array containing all elements that match the condition. If the item value IS equal to the number, then we remove it.
       // const candidateArray = candidateNums.filter((element) => element !== number);
-
-      updateCandidateNums(candidateArray); // Update the state using our changed array
-
-      // Add it back the candidate array. This creates a new array from the original and pushes the number onto the new array (without changing the original array)
-      const availableArray = availableNums.concat(number);
-      //const availableArray = [...availableNums, number]; // The spread operator could also be used to do the same thing, but concat is more appropriate for arrays.
-      updateAvailableNums(availableArray); // Update the state using our changed array
     }
+
+    // Our newCandidateArray now has all of the candidates that it should, so check for a win condition.
+    // Note: Both adding and removing candidates can cause a win condition. If the candidates are 'wrong' (i.e. their sum was greater than the starCount),
+    // removing one of the them might cause a win condition once we re-sum the candidate array.
+    if (newCandidateArray.length > 0)  {
+      // If the sum of all of the candidates in an array matches the starCount, then the user 'won' this round
+      let sum = newCandidateArray.reduce((acc, currentValue) => acc + currentValue); // Reduce returns the sum of all of the values in the array
+
+      // If the user won
+      if (sum === starCount) {
+        // Remove the winning numbers from the 'available' array (i.e. Keep all numbers *except* the candidate numbers)
+        newAvailableArray = newAvailableArray.filter(number => !newCandidateArray.includes(number));
+
+        // Reset the stars, but only using the new available numbers. The winning 'candidate' numbers were removed.
+        updateStarCount(utils.randomSumIn(newAvailableArray, 9)); // See the util method for details.
+
+        // Reset the candidate array. The user is moving onto the next turn and they should start with a full array of numbers (e.g. 1 - 9)
+        newCandidateArray = [];
+      }
+      // The didn't win. Our candidate array only has valid candidates now, but we need to move the number they clicked back into the available array
+      else {
+        // This creates a new array from the original and pushes the number onto the new array (without changing the original array)
+        newAvailableArray = availableNums.concat(number);  // The spread operator could also be used to do the same thing, but concat is more appropriate for arrays.
+      }
+    }
+
+    // Update the state arrays
+    updateCandidateNums(newCandidateArray);
+    updateAvailableNums(newAvailableArray);
   };
 
   // Returns a CSS class that matches the number's current 'status' (e.g. 'available', 'used')
@@ -83,7 +107,7 @@ const StarMatch = () => {
       return 'used'; // Numbers that are *not* available, which means they have already been selected
     }
     if (candidateNums.includes(number)) {
-      return candidatesAreWrong ? 'wrong': 'candidate'; // NumberButtons that are candidates or wrong
+      return candidatesAreWrong ? 'wrongCandidate': 'validCandidate'; // NumberButtons that are candidates or wrong
     }
     return 'available'; // Open numbers that can be selected
   }
@@ -114,8 +138,8 @@ const StarMatch = () => {
 const colors = {
   available: 'lightgray',
   used: 'lightgreen',
-  wrong: 'lightcoral',
-  candidate: 'deepskyblue',
+  wrongCandidate: 'lightcoral',
+  validCandidate: 'deepskyblue',
 };
 
 // Math science
