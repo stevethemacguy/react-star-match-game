@@ -47,14 +47,14 @@ const StarMatch = () => {
     if (status === 'used') {
       return;
     }
+    // If it's available, make it a candidate number
     if (status === 'available') {
-      const arrayToChange = candidateNums.slice();
-      arrayToChange.push(number);
-      // updateNumberState(arrayToUpdate);
-      // Make it a candidate number
-      updateCandidateNums(arrayToChange);
+      // You can't push a value onto the state array directly, so you must copy it, change the copied array, and then update the state with your changed array
+      // Concat creates a new array from the original and pushes the number onto the new array (without changing the original array), so it works for this purpose.
+      const candidateArray = candidateNums.concat(number);
+      updateCandidateNums(candidateArray); // Replace the state array with our newly created array (which now contains the number)
     }
-    // It's already candidate, remove it from the candidate array since they just clicked it a 2nd time.
+    // If it's already candidate, remove it from the candidate array since they just clicked it a 2nd time.
     // Note: A candidate can either be valid (i.e. 'candidate') or 'wrong',
     else {
       // Remove it from the candidate array
@@ -63,11 +63,15 @@ const StarMatch = () => {
       if (index > -1) {
         candidateArray.splice(index, 1);
       }
+      // Note: Instead of finding the indexToRemove, we could also use .filter(), but it only works if the number values are guaranteed to be unique.
+      // Filter returns a new array containing all elements that match the condition. If the item value IS equal to the number, then we remove it.
+      // const candidateArray = candidateNums.filter((element) => element !== number);
+
       updateCandidateNums(candidateArray); // Update the state using our changed array
 
-      // Add it back the candidate array
-      const availableArray = availableNums.slice();
-      availableArray.push(number);
+      // Add it back the candidate array. This creates a new array from the original and pushes the number onto the new array (without changing the original array)
+      const availableArray = availableNums.concat(number);
+      //const availableArray = [...availableNums, number]; // The spread operator could also be used to do the same thing, but concat is more appropriate for arrays.
       updateAvailableNums(availableArray); // Update the state using our changed array
     }
   };
