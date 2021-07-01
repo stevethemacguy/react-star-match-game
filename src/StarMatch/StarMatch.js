@@ -30,7 +30,7 @@ const StarMatch = () => {
   const [secondsLeft, updateSecondsLeft] = useState(10);
 
   useEffect(() => {
-    if (secondsLeft > 0) {
+    if (secondsLeft > 0 && availableNums.length > 0) {
       const timerId = setTimeout(() => {
         updateSecondsLeft(secondsLeft - 1);
       }, 1000)
@@ -57,7 +57,7 @@ const StarMatch = () => {
   // Given the current status of the number, what should happens when this Number is clicked?
   const onNumberClick = (number, status) => {
     // If the number is already used (i.e. green), don't do anything. Nothing should happen when the number is clicked.
-    if (status === 'used') {
+    if (getGameStatus() !== 'active' || status === 'used') {
       return;
     }
 
