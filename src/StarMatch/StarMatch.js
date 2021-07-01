@@ -1,4 +1,4 @@
-import {useState} from 'react';
+import {useEffect, useState} from 'react';
 
 const Star = () => {
   return <div className="star"/>;
@@ -27,6 +27,15 @@ const StarMatch = () => {
   const [starCount, updateStarCount] = useState(utils.random(1, 9));
   const [availableNums, updateAvailableNums] = useState(utils.range(1, 9));
   const [candidateNums, updateCandidateNums] = useState([]);
+  const [secondsLeft, updateSecondsLeft] = useState(10);
+
+  useEffect(() => {
+    if (secondsLeft > 0) {
+      setTimeout(() => {
+        updateSecondsLeft(secondsLeft - 1);
+      }, 1000)
+    }
+  })
 
   // Mark the selected Number as 'wrong', if the sum of the candidates > starCount
   const candidatesAreWrong = utils.sum(candidateNums) > starCount
@@ -110,9 +119,12 @@ const StarMatch = () => {
   };
 
   const resetGame = () => {
+    // Reset the state of the game
     updateStarCount(utils.random(1, 9))
     updateAvailableNums(utils.range(1, 9));
     updateCandidateNums([]);
+
+    //Reset any side effects
   };
 
   return (
@@ -132,7 +144,7 @@ const StarMatch = () => {
           )}
         </div>
       </div>
-      <div className="timer">Time Remaining: 10</div>
+      <div className="timer">Time Remaining: {secondsLeft}</div>
     </div>
   );
 };
