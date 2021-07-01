@@ -41,8 +41,18 @@ const StarMatch = () => {
 
   // Mark the selected Number as 'wrong', if the sum of the candidates > starCount
   const candidatesAreWrong = utils.sum(candidateNums) > starCount
-  // If there are no available moves left, then the game is over
-  const gameIsOver = availableNums.length === 0;
+
+  const getGameStatus = () => {
+    // If there are no available moves left, then the game is over
+    if (availableNums.length === 0) {
+      //updateSecondsLeft(0);
+      return 'won';
+    }
+    if (secondsLeft === 0) {
+      return 'lost';
+    }
+    return 'active';
+  };
 
   // Given the current status of the number, what should happens when this Number is clicked?
   const onNumberClick = (number, status) => {
@@ -80,7 +90,7 @@ const StarMatch = () => {
     // If the sum of all of the candidates in an array matches the starCount, then the user 'won' this round
     let sum = newCandidateNums.reduce((acc, currentValue) => acc + currentValue, 0); // Reduce returns the sum of all of the values in the array
 
-    // If the user won
+    // If the user won this round
     if (sum === starCount) {
       // Remove the winning numbers from the 'available' array (i.e. Keep all numbers *except* the candidate numbers)
       newAvailableNums = newAvailableNums.filter(number => !newCandidateNums.includes(number));
@@ -113,8 +123,9 @@ const StarMatch = () => {
   }
 
   const GameOver = (props) => {
-  	return (<>
-        <h1 className="game-done">GAME OVER</h1>
+    return (
+      <>
+        <h1 style={{color: props.gameStatus === 'won' ? 'green' : 'red'}} className="game-won">{props.gameStatus === 'won' ? 'YOU WON!' : 'GAME OVER'}</h1>
         <button className="btn" onClick={props.resetGame}>Restart the Game</button>
       </>
     )
@@ -125,8 +136,6 @@ const StarMatch = () => {
     updateStarCount(utils.random(1, 9))
     updateAvailableNums(utils.range(1, 9));
     updateCandidateNums([]);
-
-    //Reset any side effects
   };
 
   return (
@@ -136,7 +145,7 @@ const StarMatch = () => {
       </div>
       <div className="body">
         <div className="left">{
-          gameIsOver ? <GameOver resetGame={resetGame}/> : <StarList starCount={starCount}/>
+          getGameStatus() !== 'active' ? <GameOver resetGame={resetGame} gameStatus={getGameStatus()}/> : <StarList starCount={starCount}/>
         }
         </div>
         <div className="right">
