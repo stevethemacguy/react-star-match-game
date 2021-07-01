@@ -31,9 +31,11 @@ const StarMatch = () => {
 
   useEffect(() => {
     if (secondsLeft > 0) {
-      setTimeout(() => {
+      const timerId = setTimeout(() => {
         updateSecondsLeft(secondsLeft - 1);
       }, 1000)
+      // After the app re-renders, clean-up the timer by removing it. The next render will create a new-one
+      return () => clearTimeout(timerId);
     }
   })
 
