@@ -25,14 +25,12 @@ const NumberButton = (props) => {
 const StarMatch = () => {
   // A random number of stars limited to the range of 1 - 9
   const [starCount, updateStarCount] = useState(utils.random(1, 9));
-
-  // An array of color states. One for each Button. Initialized to the 'available' state
-
   const [availableNums, updateAvailableNums] = useState(utils.range(1, 9));
   const [candidateNums, updateCandidateNums] = useState([]);
 
   // Mark the selected Number as 'wrong', if the sum of the candidates > starCount
   const candidatesAreWrong = utils.sum(candidateNums) > starCount
+  const gameIsOver = availableNums.length === 0;
 
   // Given the current status of the number, what should happens when this Number is clicked?
   const onNumberClick = (number, status) => {
@@ -78,6 +76,8 @@ const StarMatch = () => {
       updateStarCount(utils.randomSumIn(newAvailableNums, 9)); // See the util method for details.
       // Reset the candidate array. The user is moving onto the next turn and they should start with a full array of numbers (e.g. 1 - 9)
       newCandidateNums = [];
+      // See if there are any available moves left, if not, then the entire game is over
+
     }
     // They didn't win. Our candidate array only has valid candidates now, but we need to move the number they clicked back into the available array.
     else {
@@ -102,6 +102,13 @@ const StarMatch = () => {
     return 'available'; // Open numbers that can be selected
   }
 
+  const GameOver = (props) => {
+  	return (<>
+        <h1 className="game-done">GAME OVER</h1>
+        <button className="btn">Restart the Game</button>
+      </>
+    )
+  };
 
   return (
     <div className="game">
@@ -109,8 +116,9 @@ const StarMatch = () => {
         Pick 1 or more numbers that sum to the number of stars
       </div>
       <div className="body">
-        <div className="left">
-          <StarList starCount={starCount}/>
+        <div className="left">{
+          gameIsOver ? <GameOver/> : <StarList starCount={starCount}/>
+        }
         </div>
         <div className="right">
           {/* Identical to the the StarList function, but uses his fancy 'range' function in place instead*/}
