@@ -30,7 +30,9 @@ const StarMatch = () => {
   const [secondsLeft, updateSecondsLeft] = useState(10);
 
   useEffect(() => {
+    // If the timer reaches zero or there are no available spaces left (because the user won), then stop the timer (i.e. don't create a timer on this render)
     if (secondsLeft > 0 && availableNums.length > 0) {
+      // If the user is still playing the game (i.e. they haven't won or lost), create a timer that counts down every second.
       const timerId = setTimeout(() => {
         updateSecondsLeft(secondsLeft - 1);
       }, 1000)
@@ -54,9 +56,10 @@ const StarMatch = () => {
     return 'active';
   };
 
-  // Given the current status of the number, what should happens when this Number is clicked?
+  // Given the current status of the number, what should happen when this Number is clicked?
   const onNumberClick = (number, status) => {
-    // If the number is already used (i.e. green), don't do anything. Nothing should happen when the number is clicked.
+    // If the game is no longer active (i.e. the user won or lost) OR the number was already used (i.e. it's green),
+    // then nothing should happen when the number is clicked, so just return.
     if (getGameStatus() !== 'active' || status === 'used') {
       return;
     }
