@@ -26,17 +26,9 @@ const StarMatch = () => {
   const [gameID, updateGameID] = useState(0)
 
   const startNewGame = () => {
+    // When gameID is incremented, React will unmount the current Game component and render a NEW Game component in it's place
     updateGameID(gameID + 1);
   };
-
-  // Instead of reseting everything
-  // const resetGame = () => {
-  //   // Todo: Reset the timer. Allow the user to click things again after game over. For Game won, this already works
-  //   // Reset the state of the game
-  //   updateStarCount(utils.random(1, 9))
-  //   updateAvailableNums(utils.range(1, 9));
-  //   updateCandidateNums([]);
-  // };
 
   return (
     <Game key={gameID} resetGame={startNewGame}/>
@@ -45,9 +37,12 @@ const StarMatch = () => {
 
 // Custom Hook used to manage the game's state (i.e. initialize and update it), as well as manage side effects.
 const useGameState = () => {
-  // A random number of stars limited to the range of 1 - 9
+  // A random number of stars between 1 - 9. The game involves clicking 1 or more numbers that add up to the starCount.
   const [starCount, updateStarCount] = useState(utils.random(1, 9));
+  // When the game starts, all Numbers (1 - 9) are 'available'. Numbers are considered 'used' (and turn green) once they have been selected and match current starCount.
   const [availableNums, updateAvailableNums] = useState(utils.range(1, 9));
+  // Candidate numbers are those that have been clicked (e.g. 4), but that do not (yet) match the current starCount (e.g. 7). They can be used with other
+  // candidates (e.g. 3) to add up to the total startCount (e.g. 7). Candidates are valid (blue) if their sum is < starCount and invalid (red) if their sum is > starCount
   const [candidateNums, updateCandidateNums] = useState([]);
   const [secondsLeft, updateSecondsLeft] = useState(10);
 
@@ -117,17 +112,41 @@ const useGameState = () => {
   return { starCount, availableNums, candidateNums, secondsLeft, updateGameState};
 }
 
+// The GameOver component is shown when the user either wins or loses the game. In both situations, the user is allowed to restart the game.
+const GameOver = (props) => {
+  return (
+    <>
+      <h1 style={{color: props.gameStatus === 'won' ? 'green' : 'red'}} className="game-won">{props.gameStatus === 'won' ? 'YOU WON!' : 'GAME OVER'}</h1>
+      <button className="btn" onClick={props.resetGame}>Restart the Game</button>
+    </>
+  )
+};
+
+// The Game component describes the Game's UI, but doesn't directly manage the state. The state is managed by the useGameState() Hook.
 const Game = (props) => {
-  // Use the useGameState Hook's exported members (i.e the state) by destructuring the returned object into local variables
+  // Use useGameState Hook's exported members (i.e the state) by destructuring the returned object into local variables.
   const { starCount, availableNums, candidateNums, secondsLeft, updateGameState } = useGameState();
 
   // Mark the selected Number as 'wrong', if the sum of the candidates > starCount
-  const candidatesAreWrong = utils.sum(candidateNums) > starCount
+  const candidatesAreWrong = utils.sum(candidateNums) > starCount;
 
+  // Returns a string representation of the Number's current 'status' (e.g. 'available', 'used').
+  // The returned value is used as a CSS class that determines the selected Number's background-color.
+  const getNumberStatus = (number) => {
+    if (!availableNums.includes(number)) {
+      return 'used'; // 'Used' numbers are no longer available; they have already been selected/used.
+    }
+
+    if (candidateNums.includes(number)) {
+      return candidatesAreWrong ? 'wrongCandidate': 'validCandidate'; // NumberButtons that are candidates or wrong
+    }
+    return 'available'; // Open numbers that can be selected
+  }
+
+  // Returns 'active' if moves are still available, 'won' if no moves are left, and 'lost' if moves are left but the timer has reached zero.
   const getGameStatus = () => {
     // If there are no available moves left, then the game is over
     if (availableNums.length === 0) {
-      //updateSecondsLeft(0);
       return 'won';
     }
     if (secondsLeft === 0) {
@@ -136,18 +155,6 @@ const Game = (props) => {
     return 'active';
   };
 
-  // Returns a string representation of the number's current 'status' (e.g. 'available', 'used'), which is
-  // used to update the game status. The status is also used as a CSS class that determines the selected number's background-color.
-  const getNumberStatus = (number) => {
-    if (!availableNums.includes(number)) {
-      return 'used'; // Numbers that are *not* available, which means they have already been selected
-    }
-    if (candidateNums.includes(number)) {
-      return candidatesAreWrong ? 'wrongCandidate': 'validCandidate'; // NumberButtons that are candidates or wrong
-    }
-    return 'available'; // Open numbers that can be selected
-  }
-
   // Given the the current status of the selected number, what should happen when the number is clicked?
   const onNumberClick = (number, status) => {
     // If the game is no longer active (i.e. the user won or lost) OR the number was already used (i.e. it's green),
@@ -155,19 +162,11 @@ const Game = (props) => {
     if (getGameStatus() !== 'active' || status === 'used') {
       return;
     }
-    // In all other situations, update the state.
+    // In all other situations, use the Hook to update the state.
     updateGameState(number, status);
   };
 
-  const GameOver = (props) => {
-    return (
-      <>
-        <h1 style={{color: props.gameStatus === 'won' ? 'green' : 'red'}} className="game-won">{props.gameStatus === 'won' ? 'YOU WON!' : 'GAME OVER'}</h1>
-        <button className="btn" onClick={props.resetGame}>Restart the Game</button>
-      </>
-    )
-  };
-
+  // Render the game
   return (
     <div className="game">
       <div className="help">
@@ -190,7 +189,7 @@ const Game = (props) => {
   );
 };
 
-// Color Theme
+// Available colors for each Number
 const colors = {
   available: 'lightgray',
   used: 'lightgreen',
@@ -198,7 +197,7 @@ const colors = {
   validCandidate: 'deepskyblue',
 };
 
-// Math science
+// Helper functions
 const utils = {
   // Sum an array
   sum: arr => arr.reduce((acc, curr) => acc + curr, 0),
