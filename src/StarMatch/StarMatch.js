@@ -43,7 +43,8 @@ const StarMatch = () => {
   )
 }
 
-const Game = (props) => {
+// Custom Hook used to manage the game's state (i.e. initialize and update it), as well as manage side effects.
+const useGameState = () => {
   // A random number of stars limited to the range of 1 - 9
   const [starCount, updateStarCount] = useState(utils.random(1, 9));
   const [availableNums, updateAvailableNums] = useState(utils.range(1, 9));
@@ -60,32 +61,11 @@ const Game = (props) => {
       // After the app re-renders, clean-up the timer by removing it. The next render will create a new-one
       return () => clearTimeout(timerId);
     }
-  })
+  });
 
-  // Mark the selected Number as 'wrong', if the sum of the candidates > starCount
-  const candidatesAreWrong = utils.sum(candidateNums) > starCount
-
-  const getGameStatus = () => {
-    // If there are no available moves left, then the game is over
-    if (availableNums.length === 0) {
-      //updateSecondsLeft(0);
-      return 'won';
-    }
-    if (secondsLeft === 0) {
-      return 'lost';
-    }
-    return 'active';
-  };
-
-  // Given the current status of the number, what should happen when this Number is clicked?
-  const onNumberClick = (number, status) => {
-    // If the game is no longer active (i.e. the user won or lost) OR the number was already used (i.e. it's green),
-    // then nothing should happen when the number is clicked, so just return.
-    if (getGameStatus() !== 'active' || status === 'used') {
-      return;
-    }
-
-    // In all other situations, we need to update both state arrays, so initialize the 'new' arrays. They will be used later when updating the state.
+  // Given the the current status of the number, what should happen when the number is clicked?
+  const updateGameState = (number, status) => {
+    // Initialized the 'new' state values, which will be modified and then used to update the state.
     let newCandidateNums = candidateNums.slice(); // Start by copying the current array.
     let newAvailableNums = availableNums.slice(); // Start by copying the current array.
 
@@ -129,13 +109,35 @@ const Game = (props) => {
       newAvailableNums = availableNums.concat(number);  // The spread operator could also be used to do the same thing, but concat is more appropriate for arrays.
     }
 
-    // Update the state arrays
+    // Update the state with the newly computed values
     updateCandidateNums(newCandidateNums);
     updateAvailableNums(newAvailableNums);
   };
 
-  // Returns a CSS class that matches the number's current 'status' (e.g. 'available', 'used')
-  // The status will determine the background-color used
+  return { starCount, availableNums, candidateNums, secondsLeft, updateGameState};
+}
+
+const Game = (props) => {
+  // Use the useGameState Hook's exported members (i.e the state) by destructuring the returned object into local variables
+  const { starCount, availableNums, candidateNums, secondsLeft, updateGameState } = useGameState();
+
+  // Mark the selected Number as 'wrong', if the sum of the candidates > starCount
+  const candidatesAreWrong = utils.sum(candidateNums) > starCount
+
+  const getGameStatus = () => {
+    // If there are no available moves left, then the game is over
+    if (availableNums.length === 0) {
+      //updateSecondsLeft(0);
+      return 'won';
+    }
+    if (secondsLeft === 0) {
+      return 'lost';
+    }
+    return 'active';
+  };
+
+  // Returns a string representation of the number's current 'status' (e.g. 'available', 'used'), which is
+  // used to update the game status. The status is also used as a CSS class that determines the selected number's background-color.
   const getNumberStatus = (number) => {
     if (!availableNums.includes(number)) {
       return 'used'; // Numbers that are *not* available, which means they have already been selected
@@ -145,6 +147,17 @@ const Game = (props) => {
     }
     return 'available'; // Open numbers that can be selected
   }
+
+  // Given the the current status of the selected number, what should happen when the number is clicked?
+  const onNumberClick = (number, status) => {
+    // If the game is no longer active (i.e. the user won or lost) OR the number was already used (i.e. it's green),
+    // then nothing should happen when the number is clicked, so just return.
+    if (getGameStatus() !== 'active' || status === 'used') {
+      return;
+    }
+    // In all other situations, update the state.
+    updateGameState(number, status);
+  };
 
   const GameOver = (props) => {
     return (
