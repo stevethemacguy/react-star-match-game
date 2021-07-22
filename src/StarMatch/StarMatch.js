@@ -23,6 +23,27 @@ const NumberButton = (props) => {
 };
 
 const StarMatch = () => {
+  const [gameID, updateGameID] = useState(0)
+
+  const startNewGame = () => {
+    updateGameID(gameID + 1);
+  };
+
+  // Instead of reseting everything
+  // const resetGame = () => {
+  //   // Todo: Reset the timer. Allow the user to click things again after game over. For Game won, this already works
+  //   // Reset the state of the game
+  //   updateStarCount(utils.random(1, 9))
+  //   updateAvailableNums(utils.range(1, 9));
+  //   updateCandidateNums([]);
+  // };
+
+  return (
+    <Game key={gameID} resetGame={startNewGame}/>
+  )
+}
+
+const Game = (props) => {
   // A random number of stars limited to the range of 1 - 9
   const [starCount, updateStarCount] = useState(utils.random(1, 9));
   const [availableNums, updateAvailableNums] = useState(utils.range(1, 9));
@@ -134,13 +155,6 @@ const StarMatch = () => {
     )
   };
 
-  const resetGame = () => {
-    // Reset the state of the game
-    updateStarCount(utils.random(1, 9))
-    updateAvailableNums(utils.range(1, 9));
-    updateCandidateNums([]);
-  };
-
   return (
     <div className="game">
       <div className="help">
@@ -148,7 +162,7 @@ const StarMatch = () => {
       </div>
       <div className="body">
         <div className="left">{
-          getGameStatus() !== 'active' ? <GameOver resetGame={resetGame} gameStatus={getGameStatus()}/> : <StarList starCount={starCount}/>
+          getGameStatus() !== 'active' ? <GameOver resetGame={props.resetGame} gameStatus={getGameStatus()}/> : <StarList starCount={starCount}/>
         }
         </div>
         <div className="right">
