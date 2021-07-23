@@ -1,5 +1,4 @@
-import './app.css';
-import './StarMatch/StarMatch.css';
+import './App.css';
 import StarMatch from './components/StarMatch';
 
 function App() {
